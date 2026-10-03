@@ -76,7 +76,8 @@ SAME compares only the **first action, status and target**. It does not compare 
 - 46 measured HTTP requests against pinned official local runtimes; 41 asserted fixture matches and five investigative measurements
 - Independent regression comparison against those recorded measurements: **34 supported model outcomes match status/location/body fingerprints; 12 are explicitly UNKNOWN**
 - Source/fixture and dependency-lock digests are checked in the test suite
-- Sandboxed Chromium desktop/mobile/repeated/cancel/stale-state tests are prepared in CI; see [verification status](docs/verification.md) for what has actually run
+- [Recorded CI run 37119882514](https://github.com/Masanori-Spec/route-witness/actions/runs/37119882514), at commit `ca473bdf34b2025a6974e6448bd3cf9f3eafba9c`, passed all six jobs: four Node/timezone combinations, 33 sandboxed Chromium scenarios and the fresh official-local fixtures
+- Desktop/mobile screenshots were reviewed. A nonfocused skip-link capture artifact was then fixed with focus-preserving clipping; a 34th browser scenario checks scrolled hidden/focused states. See [verification status](docs/verification.md) for the recorded revision and the latest-revision CI boundary
 
 ```sh
 npm test

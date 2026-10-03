@@ -269,6 +269,60 @@ await test("initial Japanese sample keyboard skip and bilingual controls", async
     fullPage: true,
   });
 });
+await test("skip link stays clipped when scrolled and reveals on keyboard focus", async (page) => {
+  for (const viewport of [
+    { width: 1440, height: 1100 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await setup(page);
+    await page.evaluate(() =>
+      window.scrollTo({ top: 1200, behavior: "instant" }),
+    );
+    const inspect = () =>
+      page.locator(".skip-link").evaluate((el) => {
+        const style = getComputedStyle(el),
+          rect = el.getBoundingClientRect();
+        return {
+          focused: el === document.activeElement,
+          clipPath: style.clipPath,
+          width: rect.width,
+          height: rect.height,
+          left: rect.left,
+          top: rect.top,
+          right: rect.right,
+          bottom: rect.bottom,
+          scrollY: window.scrollY,
+        };
+      });
+    let state = await inspect();
+    assert.ok(
+      state.scrollY > 0,
+      "The nonfocused clipping check must run after scrolling",
+    );
+    assert.equal(state.focused, false);
+    assert.equal(state.clipPath, "inset(50%)");
+    assert.equal(state.width, 1);
+    assert.equal(state.height, 1);
+    // Programmatic focus uses the same CSS :focus state as keyboard Tab; the
+    // existing first-Tab test independently checks keyboard reachability.
+    await page.locator(".skip-link").focus();
+    state = await inspect();
+    assert.equal(state.focused, true);
+    assert.equal(state.clipPath, "none");
+    assert.ok(state.width > 1 && state.height > 1);
+    assert.ok(state.left >= 0 && state.top >= 0);
+    assert.ok(state.right <= viewport.width && state.bottom <= viewport.height);
+    await page.keyboard.press("Enter");
+    assert.match(page.url(), /#workspace$/);
+    await page.locator("#netlify").focus();
+    state = await inspect();
+    assert.equal(state.focused, false);
+    assert.equal(state.clipPath, "inset(50%)");
+    assert.equal(state.width, 1);
+    assert.equal(state.height, 1);
+  }
+});
 await test("real sample asset interception report export evidence and repeat", async (page) => {
   await setup(page);
   await run(page);
