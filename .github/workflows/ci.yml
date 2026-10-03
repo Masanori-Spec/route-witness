@@ -1,0 +1,66 @@
+name: Verify Route Witness
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [22, 24]
+        timezone: [UTC, Asia/Tokyo]
+    env:
+      TZ: ${{ matrix.timezone }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run check
+  browser:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Exercise local-only interface with Chromium sandbox
+        run: |
+          npm run serve > /tmp/route-witness-server.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:4173/ > /dev/null && break; sleep 1; done
+          npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-evidence
+          path: tests/browser/artifacts/
+          if-no-files-found: ignore
+  official-local-fixtures:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: fixtures/emulator/oracle/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run build:core
+      - run: npm ci --ignore-scripts --prefix fixtures/emulator/oracle
+      - run: node scripts/emulator-check.mjs --run --output fixtures/emulator/local-results.json
+      - run: ROUTE_WITNESS_ORACLE_REPORT=fixtures/emulator/local-results.json node --test tests/oracle.test.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: official-local-evidence
+          path: fixtures/emulator/local-results.json
+          if-no-files-found: ignore
