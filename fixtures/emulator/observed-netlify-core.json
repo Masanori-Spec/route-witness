@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 1,
+  "evidenceLevel": "official-local-emulator-http",
+  "startedAt": "2026-10-03T11:05:35.650Z",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "arch": "x64",
+  "pins": {
+    "netlify-cli": "27.10.2",
+    "wrangler": "4.147.0"
+  },
+  "fixturesSha256": "9bfe9d4369c72435abeded68628b97dd880277bdbaf85e5286c1bde0d0cd6737",
+  "productionParityClaimed": false,
+  "netlifyEdgeFunctionsDisabled": true,
+  "runs": [
+    {
+      "scenario": "core",
+      "platform": "netlify",
+      "state": "observed",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "<oracle>/node_modules/netlify-cli/bin/run.js",
+        "dev",
+        "--offline",
+        "--internal-disable-edge-functions",
+        "--dir",
+        "<temporary-fixture>/public",
+        "--framework",
+        "#static",
+        "--port",
+        "18761",
+        "--no-open",
+        "--skip-gitignore"
+      ],
+      "observations": [
+        {
+          "path": "/default",
+          "observed": {
+            "status": 301,
+            "location": "/target.txt",
+            "contentType": null,
+            "bodyBytes": 26,
+            "bodySha256": "05df3bcf36665294fae9168938f89d68051425517f7e427609832286fba079af"
+          },
+          "expectedHypothesis": {
+            "status": 301,
+            "location": "/target.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/assets/style.css",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/css; charset=utf-8",
+            "bodyBytes": 24,
+            "bodySha256": "a6a1157c718a8e088a2f5002d00e4441e7fe6c2a07c7324f5f9d11be55a1552d"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "assets/style.css"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/assets/app.js",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "application/javascript; charset=utf-8",
+            "bodyBytes": 33,
+            "bodySha256": "b4829d181af299f2b5240167efe61e1e84cb106c68eac98275b5f101ad1fcc68"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "assets/app.js"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/existing.txt",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/plain; charset=utf-8",
+            "bodyBytes": 23,
+            "bodySha256": "d4c25b62dd251d7c571c7ecc169706049628ff3b45d719d044d75258a117abcc"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "existing.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/a",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/plain; charset=utf-8",
+            "bodyBytes": 16,
+            "bodySha256": "dc519ae78e8e60f6824e44ff0871949daae6e2ad6de83fc04b35b40d1a737444"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "b.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/b.txt",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/plain; charset=utf-8",
+            "bodyBytes": 16,
+            "bodySha256": "dc519ae78e8e60f6824e44ff0871949daae6e2ad6de83fc04b35b40d1a737444"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "b.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/duplicate",
+          "observed": {
+            "status": 301,
+            "location": "/first",
+            "contentType": null,
+            "bodyBytes": 21,
+            "bodySha256": "41766e56755821bbd1da679cb14ac0f6c8a6446da0cbd9150b3eaa72b27bb2b5"
+          },
+          "expectedHypothesis": {
+            "status": 301,
+            "location": "/first"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/order/special",
+          "observed": {
+            "status": 301,
+            "location": "/specific",
+            "contentType": null,
+            "bodyBytes": 24,
+            "bodySha256": "a93ce5cf794bfb18a708b8ca55f0b217c084314b7a9c4ab045ba2dcf0265e15e"
+          },
+          "expectedHypothesis": {
+            "status": 301,
+            "location": "/specific"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/order/other",
+          "observed": {
+            "status": 302,
+            "location": "/dynamic/other",
+            "contentType": null,
+            "bodyBytes": 29,
+            "bodySha256": "b0a304e53ac73f10d2efa4b5af8d91f1ec23e41c1d0476c59152f17dfc5c672c"
+          },
+          "expectedHypothesis": {
+            "status": 302,
+            "location": "/dynamic/other"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/precedence/special",
+          "observed": {
+            "status": 302,
+            "location": "/dynamic/special",
+            "contentType": null,
+            "bodyBytes": 31,
+            "bodySha256": "d05e81466c3f5b4932832a63fe126c127d6a312e02577e1132a0bf03b9d509c5"
+          },
+          "expectedHypothesis": {
+            "status": 302,
+            "location": "/dynamic/special"
+          },
+          "investigation": "Cloudflare exact rule occurs after first dynamic rule",
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/code303",
+          "observed": {
+            "status": 303,
+            "location": "/target.txt",
+            "contentType": null,
+            "bodyBytes": 26,
+            "bodySha256": "05df3bcf36665294fae9168938f89d68051425517f7e427609832286fba079af"
+          },
+          "expectedHypothesis": null,
+          "investigation": "Netlify 303 not explicitly enumerated by current redirect docs",
+          "hypothesisResult": "unasserted",
+          "failures": []
+        },
+        {
+          "path": "/code307",
+          "observed": {
+            "status": 307,
+            "location": "/target.txt",
+            "contentType": null,
+            "bodyBytes": 26,
+            "bodySha256": "05df3bcf36665294fae9168938f89d68051425517f7e427609832286fba079af"
+          },
+          "expectedHypothesis": null,
+          "investigation": "Netlify docs explicitly mark 307 unsupported; record local divergence",
+          "hypothesisResult": "unasserted",
+          "failures": []
+        },
+        {
+          "path": "/code308",
+          "observed": {
+            "status": 308,
+            "location": "/target.txt",
+            "contentType": null,
+            "bodyBytes": 26,
+            "bodySha256": "05df3bcf36665294fae9168938f89d68051425517f7e427609832286fba079af"
+          },
+          "expectedHypothesis": null,
+          "investigation": "Netlify 308 not explicitly enumerated by current redirect docs",
+          "hypothesisResult": "unasserted",
+          "failures": []
+        },
+        {
+          "path": "/missing",
+          "observed": {
+            "status": 404,
+            "location": null,
+            "contentType": "text/html; charset=utf-8",
+            "bodyBytes": 18,
+            "bodySha256": "1caa513a7442ffb8fc886af51b51e24d5b9586dba63caa6db0d702c7b2aa4f78"
+          },
+          "expectedHypothesis": null,
+          "investigation": "Explicit 404.html prevents implicit Cloudflare SPA fallback",
+          "hypothesisResult": "unasserted",
+          "failures": []
+        }
+      ],
+      "log": "⬥ Using simple static server because '--dir' flag was specified\n⬥ Running static server from \"route-witness-oracle-CAf14L/public\"\n⬥ Setting up local dev server\n\n⬥ Static server listening to 3999\n⬥ Edge functions are disabled. Run without the --internal-disable-edge-functions flag to enable them.\n\n   ╭──────────────────────── ⬥  ────────────────────────╮\n   │                                                    │\n   │   Local dev server ready: http://localhost:18761   │\n   │                                                    │\n   ╰────────────────────────────────────────────────────╯\n\n(node:17) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.\n(Use `node --trace-deprecation ...` to show where the warning was created)\n⬥ Redirecting /default to /target.txt\n⬥ Rewrote URL to /b.txt\n⬥ Redirecting /duplicate to /first\n⬥ Redirecting /order/special to /specific\n⬥ Redirecting /order/other to /dynamic/other\n⬥ Redirecting /precedence/special to /dynamic/special\n⬥ Redirecting /code303 to /target.txt\n⬥ Redirecting /code307 to /target.txt\n⬥ Redirecting /code308 to /target.txt\n"
+    }
+  ],
+  "lockfileSha256": "d82286e57d75b27b809573e143f8d534a00a079734f25cb54cb5d544f7e887eb",
+  "finishedAt": "2026-10-03T11:05:38.450Z",
+  "counts": {
+    "observedRequests": 14,
+    "blockedRuns": 0,
+    "hypothesisMismatches": 0
+  }
+}

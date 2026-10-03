@@ -1,0 +1,365 @@
+{
+  "schemaVersion": 1,
+  "description": "Independently authored official-emulator requests. Expected values are test assertions informed by docs and local observations; observation artifacts alone contain measured fingerprints.",
+  "scenarios": [
+    {
+      "id": "core",
+      "rules": [
+        "/default /target.txt",
+        "/assets/app.js /shell.html 200",
+        "/existing.txt /target.txt 301",
+        "/a /b.txt 200",
+        "/b.txt /c.txt 200",
+        "/duplicate /first 301",
+        "/duplicate /second 302",
+        "/code303 /target.txt 303",
+        "/code307 /target.txt 307",
+        "/code308 /target.txt 308",
+        "/order/special /specific 301",
+        "/order/* /dynamic/:splat 302",
+        "/precedence/* /dynamic/:splat 302",
+        "/precedence/special /specific 301"
+      ],
+      "requests": [
+        {
+          "path": "/default",
+          "expected": {
+            "netlify": {
+              "status": 301,
+              "location": "/target.txt"
+            },
+            "cloudflare": {
+              "status": 302,
+              "location": "/target.txt"
+            }
+          }
+        },
+        {
+          "path": "/assets/style.css",
+          "expected": {
+            "netlify": {
+              "status": 200,
+              "bodyAsset": "assets/style.css"
+            },
+            "cloudflare": {
+              "status": 200,
+              "bodyAsset": "assets/style.css"
+            }
+          }
+        },
+        {
+          "path": "/assets/app.js",
+          "expected": {
+            "netlify": {
+              "status": 200,
+              "bodyAsset": "assets/app.js"
+            },
+            "cloudflare": {
+              "status": 308,
+              "location": "/shell"
+            }
+          },
+          "investigate": "Wrangler 4.147.0 HTML canonicalization follows rewrite target; original 200 hypothesis failed"
+        },
+        {
+          "path": "/existing.txt",
+          "expected": {
+            "netlify": {
+              "status": 200,
+              "bodyAsset": "existing.txt"
+            },
+            "cloudflare": {
+              "status": 301,
+              "location": "/target.txt"
+            }
+          }
+        },
+        {
+          "path": "/a",
+          "expected": {
+            "netlify": {
+              "status": 200,
+              "bodyAsset": "b.txt"
+            },
+            "cloudflare": {
+              "status": 200,
+              "bodyAsset": "b.txt"
+            }
+          }
+        },
+        {
+          "path": "/b.txt",
+          "expected": {
+            "netlify": {
+              "status": 200,
+              "bodyAsset": "b.txt"
+            },
+            "cloudflare": {
+              "status": 200,
+              "bodyAsset": "c.txt"
+            }
+          }
+        },
+        {
+          "path": "/duplicate",
+          "expected": {
+            "netlify": {
+              "status": 301,
+              "location": "/first"
+            },
+            "cloudflare": {
+              "status": 301,
+              "location": "/first"
+            }
+          }
+        },
+        {
+          "path": "/order/special",
+          "expected": {
+            "netlify": {
+              "status": 301,
+              "location": "/specific"
+            },
+            "cloudflare": {
+              "status": 301,
+              "location": "/specific"
+            }
+          }
+        },
+        {
+          "path": "/order/other",
+          "expected": {
+            "netlify": {
+              "status": 302,
+              "location": "/dynamic/other"
+            },
+            "cloudflare": {
+              "status": 302,
+              "location": "/dynamic/other"
+            }
+          }
+        },
+        {
+          "path": "/precedence/special",
+          "expected": {
+            "netlify": {
+              "status": 302,
+              "location": "/dynamic/special"
+            },
+            "cloudflare": {
+              "status": 302,
+              "location": "/dynamic/special"
+            }
+          },
+          "investigate": "Cloudflare exact rule occurs after first dynamic rule"
+        },
+        {
+          "path": "/code303",
+          "expected": {
+            "cloudflare": {
+              "status": 303,
+              "location": "/target.txt"
+            }
+          },
+          "investigate": "Netlify 303 not explicitly enumerated by current redirect docs"
+        },
+        {
+          "path": "/code307",
+          "expected": {
+            "cloudflare": {
+              "status": 307,
+              "location": "/target.txt"
+            }
+          },
+          "investigate": "Netlify docs explicitly mark 307 unsupported; record local divergence"
+        },
+        {
+          "path": "/code308",
+          "expected": {
+            "cloudflare": {
+              "status": 308,
+              "location": "/target.txt"
+            }
+          },
+          "investigate": "Netlify 308 not explicitly enumerated by current redirect docs"
+        },
+        {
+          "path": "/missing",
+          "investigate": "Explicit 404.html prevents implicit Cloudflare SPA fallback"
+        }
+      ]
+    },
+    {
+      "id": "force-and-shadow",
+      "rulesByPlatform": {
+        "netlify": [
+          "/assets/app.js /shell.html 200!",
+          "/shadow.txt /first 302",
+          "/shadow.txt /second 302!"
+        ],
+        "cloudflare": [
+          "/assets/app.js /shell.html 200",
+          "/shadow.txt /first 302",
+          "/shadow.txt /second 302"
+        ]
+      },
+      "requests": [
+        {
+          "path": "/assets/app.js",
+          "expected": {
+            "netlify": {
+              "status": 200,
+              "bodyAsset": "shell.html"
+            },
+            "cloudflare": {
+              "status": 308,
+              "location": "/shell"
+            }
+          },
+          "investigate": "Wrangler 4.147.0 HTML canonicalization follows rewrite target; original 200 hypothesis failed"
+        },
+        {
+          "path": "/shadow.txt",
+          "expected": {
+            "netlify": {
+              "status": 200,
+              "bodyAsset": "shadow.txt"
+            },
+            "cloudflare": {
+              "status": 302,
+              "location": "/first"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "catchall-index",
+      "rules": [
+        "/* /index.html 200"
+      ],
+      "requests": [
+        {
+          "path": "/assets/app.js",
+          "expected": {
+            "netlify": {
+              "status": 200,
+              "bodyAsset": "assets/app.js"
+            },
+            "cloudflare": {
+              "status": 200,
+              "bodyAsset": "assets/app.js"
+            }
+          },
+          "investigate": "Wrangler parser currently rejects wildcard-to-index even with 200"
+        },
+        {
+          "path": "/missing",
+          "expected": {
+            "netlify": {
+              "status": 200,
+              "bodyAsset": "index.html"
+            },
+            "cloudflare": {
+              "status": 404,
+              "bodyAsset": "404.html"
+            }
+          },
+          "investigate": "Observe rejected rule vs rewrite; 404.html is present"
+        }
+      ]
+    },
+    {
+      "id": "catchall-shell",
+      "rules": [
+        "/* /shell.html 200"
+      ],
+      "requests": [
+        {
+          "path": "/assets/app.js",
+          "expected": {
+            "netlify": {
+              "status": 200,
+              "bodyAsset": "assets/app.js"
+            },
+            "cloudflare": {
+              "status": 308,
+              "location": "/shell"
+            }
+          },
+          "investigate": "Wrangler 4.147.0 HTML canonicalization follows rewrite target; original 200 hypothesis failed"
+        },
+        {
+          "path": "/missing",
+          "expected": {
+            "netlify": {
+              "status": 200,
+              "bodyAsset": "shell.html"
+            },
+            "cloudflare": {
+              "status": 308,
+              "location": "/shell"
+            }
+          },
+          "investigate": "Wrangler 4.147.0 HTML canonicalization follows rewrite target; original 200 hypothesis failed"
+        }
+      ]
+    },
+    {
+      "id": "catchall-text",
+      "rules": [
+        "/* /target.txt 200"
+      ],
+      "requests": [
+        {
+          "path": "/assets/app.js",
+          "expected": {
+            "netlify": {
+              "status": 200,
+              "bodyAsset": "assets/app.js"
+            },
+            "cloudflare": {
+              "status": 200,
+              "bodyAsset": "target.txt"
+            }
+          }
+        },
+        {
+          "path": "/missing",
+          "expected": {
+            "netlify": {
+              "status": 200,
+              "bodyAsset": "target.txt"
+            },
+            "cloudflare": {
+              "status": 200,
+              "bodyAsset": "target.txt"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "html-alias",
+      "rules": [
+        "/assets/app.js /shell 200"
+      ],
+      "requests": [
+        {
+          "path": "/assets/app.js",
+          "expected": {
+            "netlify": {
+              "status": 200,
+              "bodyAsset": "assets/app.js"
+            },
+            "cloudflare": {
+              "status": 200,
+              "bodyAsset": "shell.html"
+            }
+          },
+          "investigate": "Explicit extensionless rewrite target backed by shell.html; alias profile remains bounded"
+        }
+      ]
+    }
+  ]
+}

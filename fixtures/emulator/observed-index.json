@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "evidenceLevel": "official-local-emulator-http",
+  "startedAt": "2026-10-03T11:04:43.921Z",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "arch": "x64",
+  "pins": {
+    "netlify-cli": "27.10.2",
+    "wrangler": "4.147.0"
+  },
+  "fixturesSha256": "9bfe9d4369c72435abeded68628b97dd880277bdbaf85e5286c1bde0d0cd6737",
+  "productionParityClaimed": false,
+  "runs": [
+    {
+      "scenario": "catchall-index",
+      "platform": "cloudflare",
+      "state": "observed",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "<oracle>/node_modules/wrangler/bin/wrangler.js",
+        "pages",
+        "dev",
+        "<temporary-fixture>/public",
+        "--ip",
+        "127.0.0.1",
+        "--port",
+        "18762",
+        "--inspector-port",
+        "0",
+        "--compatibility-date",
+        "2026-10-03",
+        "--show-interactive-dev-session=false",
+        "--log-level",
+        "info"
+      ],
+      "observations": [
+        {
+          "path": "/assets/app.js",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "application/javascript",
+            "bodyBytes": 33,
+            "bodySha256": "b4829d181af299f2b5240167efe61e1e84cb106c68eac98275b5f101ad1fcc68"
+          },
+          "expectedHypothesis": null,
+          "investigation": "Wrangler parser currently rejects wildcard-to-index even with 200",
+          "hypothesisResult": "unasserted",
+          "failures": []
+        },
+        {
+          "path": "/missing",
+          "observed": {
+            "status": 404,
+            "location": null,
+            "contentType": "text/html; charset=utf-8",
+            "bodyBytes": 18,
+            "bodySha256": "1caa513a7442ffb8fc886af51b51e24d5b9586dba63caa6db0d702c7b2aa4f78"
+          },
+          "expectedHypothesis": null,
+          "investigation": "Observe rejected rule vs rewrite; 404.html is present",
+          "hypothesisResult": "unasserted",
+          "failures": []
+        }
+      ],
+      "log": "\u001b[33m▲ \u001b[43;33m[\u001b[43;30mWARNING\u001b[43;33m]\u001b[0m \u001b[1mFound 1 invalid redirect rule:\u001b[0m\n\n  ▶︎ Infinite loop detected in this rule and has been ignored. This will cause a redirect to strip `.html` or `/index` and end up triggering this rule again. Please fix or remove this rule to silence this warning.\n      at public/_redirects:1 | /* /index.html 200\n  \n  \n\n\n[wrangler:warn] Unable to fetch the `Request.cf` object! Falling back to a default placeholder...\nError: getaddrinfo EAI_AGAIN workers.cloudflare.com\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n[wrangler:warn] Unable to fetch the `Request.cf` object! Falling back to a default placeholder...\nError: getaddrinfo EAI_AGAIN workers.cloudflare.com\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n[wrangler:info] Ready on http://127.0.0.1:18762\n[wrangler:info] GET /assets/style.css 200 OK (142ms)\n[wrangler:info] GET /assets/app.js 200 OK (3ms)\n[wrangler:info] GET /missing 404 Not Found (3ms)\n"
+    }
+  ],
+  "lockfileSha256": "d82286e57d75b27b809573e143f8d534a00a079734f25cb54cb5d544f7e887eb",
+  "finishedAt": "2026-10-03T11:04:45.137Z",
+  "counts": {
+    "observedRequests": 2,
+    "blockedRuns": 0,
+    "hypothesisMismatches": 0
+  }
+}

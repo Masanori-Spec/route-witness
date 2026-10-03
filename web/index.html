@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'; connect-src 'none'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="color-scheme" content="dark" />
+    <meta
+      name="description"
+      content="An asset-aware, local-only Netlify to Cloudflare Pages request-outcome comparator. Inspect the evidence before moving your routes."
+    />
+    <title>Route Witness — ルート移行を、証拠で確かめる</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./app.js" type="module"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#workspace" data-i18n="skip">比較ツールへ</a>
+    <header class="site-header shell">
+      <a class="brand" href="#top" aria-label="Route Witness home"
+        ><span class="brand-mark" aria-hidden="true">↗</span> ROUTE
+        <strong>WITNESS</strong><span class="version">01</span></a
+      >
+      <div class="header-tools">
+        <span class="local-pill"
+          ><span aria-hidden="true"></span
+          ><span data-i18n="local">ブラウザ内で処理</span></span
+        ><label class="sr-only" for="language" data-i18n="language"
+          >表示言語</label
+        ><select id="language">
+          <option value="ja">日本語</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+    </header>
+    <main id="top">
+      <section class="hero shell" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">
+            <span class="small-line"></span> NETLIFY → CLOUDFLARE PAGES
+          </p>
+          <h1 id="hero-title">
+            <span data-i18n="hero1">同じルール。</span><br /><span
+              class="accent"
+              data-i18n="hero2"
+              >違う行き先。</span
+            >
+          </h1>
+          <p class="hero-description" data-i18n="heroDescription">
+            移行前に、URL
+            と静的ファイルの行き先を比較。見逃しやすい配信の差を、ルールの行番号とファイルの証拠で確かめます。
+          </p>
+          <div class="hero-meta">
+            <span data-i18n="noUpload">アップロードなし</span
+            ><span aria-hidden="true">/</span
+            ><span data-i18n="noAccount">アカウント不要</span
+            ><span aria-hidden="true">/</span
+            ><span data-i18n="bounded">限定されたモデル</span>
+          </div>
+        </div>
+        <div
+          class="route-figure"
+          role="img"
+          aria-label="One asset request can reach a file on Netlify and a rewrite on Cloudflare Pages"
+          data-i18n-aria="figureLabel"
+        >
+          <div class="figure-top">
+            <span>REQUEST / 001</span
+            ><span class="signal-dots" aria-hidden="true">● ● ●</span>
+          </div>
+          <div class="request-node">
+            <span class="node-icon" aria-hidden="true">↳</span
+            ><code>/assets/app.js</code>
+          </div>
+          <div class="branch" aria-hidden="true">
+            <span></span><span></span>
+          </div>
+          <div class="route-lanes">
+            <div class="lane netlify-lane">
+              <span class="platform-label">NETLIFY</span
+              ><strong data-i18n="fileWins">静的ファイル</strong
+              ><code>/assets/app.js</code
+              ><span class="lane-tag" data-i18n="assetFirst"
+                >ファイルを優先</span
+              >
+            </div>
+            <div class="lane pages-lane">
+              <span class="platform-label">PAGES</span
+              ><strong data-i18n="ruleWins">リライトルール</strong
+              ><code>/fallback.txt</code
+              ><span class="lane-tag" data-i18n="intercepted"
+                >ファイルへの要求を捕捉</span
+              >
+            </div>
+          </div>
+          <p class="figure-caption">
+            <span aria-hidden="true">↔</span
+            ><span data-i18n="figureCaption"
+              >/* /fallback.txt 200 を置いた静的サンプル</span
+            >
+          </p>
+        </div>
+      </section>
+      <section
+        class="boundary shell"
+        aria-label="Scope"
+        data-i18n-aria="scopeLabel"
+      >
+        <span class="boundary-symbol" aria-hidden="true">i</span>
+        <p data-i18n="boundary">
+          これはデプロイ検証ではありません。静的ファイル一覧と限定された
+          _redirects
+          構文に基づく比較です。Functions・Workers、条件付きルール、未確認の動作は
+          UNKNOWN として扱います。
+        </p>
+        <a href="#limits" data-i18n="seeLimits">モデルの範囲 ↓</a>
+      </section>
+      <section
+        id="workspace"
+        class="workspace shell"
+        tabindex="-1"
+        aria-labelledby="workspace-title"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow" data-i18n="workspaceEyebrow">
+              01 / 比較する材料
+            </p>
+            <h2 id="workspace-title" data-i18n="workspaceTitle">
+              行き先を確かめる
+            </h2>
+          </div>
+          <div class="workspace-actions">
+            <label class="sr-only" for="example" data-i18n="exampleLabel"
+              >サンプルを選択</label
+            ><select id="example">
+              <option value="spa" data-i18n="exampleSpa">
+                静的アセットの捕捉
+              </option>
+              <option value="defaults" data-i18n="exampleDefaults">
+                省略されたステータス
+              </option>
+              <option value="forced" data-i18n="exampleForced">
+                強制ルールと構文の差
+              </option>
+              <option value="unknown" data-i18n="exampleUnknown">
+                未対応の条件付きルール
+              </option></select
+            ><button
+              id="load-example"
+              class="button secondary"
+              data-i18n="loadExample"
+            >
+              サンプル読込</button
+            ><button id="reset" class="text-button" data-i18n="reset">
+              すべてクリア
+            </button>
+          </div>
+        </div>
+        <p class="sample-note" id="sample-note" data-i18n="sampleNote">
+          サンプル入力です。チェック済みの確認事項は、この静的サンプルのみに適用されます。
+        </p>
+        <div class="config-toolbar">
+          <span data-i18n="configHint"
+            >各サービスに配置する _redirects を、別々に入力</span
+          ><button id="swap" class="text-button" data-i18n="swap">
+            ⇄ 設定を入れ替え
+          </button>
+        </div>
+        <div class="config-grid">
+          <section class="editor-card">
+            <div class="editor-heading">
+              <label for="netlify"
+                ><span class="platform-dot mint" aria-hidden="true"></span
+                >Netlify <span class="muted">_redirects</span></label
+              ><label
+                class="file-button"
+                for="netlify-file"
+                data-i18n="chooseFile"
+                >ファイルを選択</label
+              ><input
+                id="netlify-file"
+                type="file"
+                class="file-input"
+                accept=".txt,.text,.redirects,text/plain"
+                data-target="netlify"
+              />
+            </div>
+            <textarea
+              id="netlify"
+              spellcheck="false"
+              autocapitalize="off"
+              autocomplete="off"
+              aria-describedby="config-limit netlify-meta"
+            ></textarea>
+            <div class="editor-meta" id="netlify-meta"></div>
+          </section>
+          <section class="editor-card">
+            <div class="editor-heading">
+              <label for="pages"
+                ><span class="platform-dot amber" aria-hidden="true"></span
+                >Cloudflare Pages <span class="muted">_redirects</span></label
+              ><label
+                class="file-button"
+                for="pages-file"
+                data-i18n="chooseFile"
+                >ファイルを選択</label
+              ><input
+                id="pages-file"
+                type="file"
+                class="file-input"
+                accept=".txt,.text,.redirects,text/plain"
+                data-target="pages"
+              />
+            </div>
+            <textarea
+              id="pages"
+              spellcheck="false"
+              autocapitalize="off"
+              autocomplete="off"
+              aria-describedby="config-limit pages-meta"
+            ></textarea>
+            <div class="editor-meta" id="pages-meta"></div>
+          </section>
+        </div>
+        <p id="config-limit" class="field-help" data-i18n="configLimit">
+          各設定: 最大 100,000 文字 / 500 行 / 1 行 1,000
+          文字。設定の編集で「静的サイトのみ」の確認が外れます。
+        </p>
+        <div class="data-grid">
+          <section class="data-card">
+            <div class="data-heading">
+              <div>
+                <span class="step-label">A</span
+                ><label for="inventory" data-i18n="inventoryLabel"
+                  >ビルド成果物の一覧</label
+                >
+              </div>
+              <label
+                class="file-button"
+                for="inventory-file"
+                data-i18n="chooseFile"
+                >ファイルを選択</label
+              ><input
+                id="inventory-file"
+                class="file-input"
+                type="file"
+                accept=".txt,.json,text/plain,application/json"
+                data-target="inventory"
+              />
+            </div>
+            <p class="field-help" id="inventory-help" data-i18n="inventoryHelp">
+              URL ルートからのパスを 1 行ずつ、または {"paths":["/index.html"]}
+              形式の JSON。
+            </p>
+            <textarea
+              id="inventory"
+              spellcheck="false"
+              autocapitalize="off"
+              autocomplete="off"
+              aria-describedby="inventory-help attestation-help"
+            ></textarea
+            ><label class="check-row" for="complete"
+              ><input type="checkbox" id="complete" /><span data-i18n="complete"
+                >この一覧は、両サービスに配信する全ファイルを含む</span
+              ></label
+            >
+          </section>
+          <section class="data-card">
+            <div class="data-heading">
+              <div>
+                <span class="step-label">B</span
+                ><label for="requests" data-i18n="requestsLabel"
+                  >比較するリクエストパス</label
+                >
+              </div>
+              <label
+                class="file-button"
+                for="requests-file"
+                data-i18n="chooseFile"
+                >ファイルを選択</label
+              ><input
+                id="requests-file"
+                class="file-input"
+                type="file"
+                accept=".txt,text/plain"
+                data-target="requests"
+              />
+            </div>
+            <p class="field-help" id="requests-help" data-i18n="requestsHelp">
+              /old や /docs/start のように 1
+              行ずつ入力。ルート相対パスだけをモデル化します。
+            </p>
+            <textarea
+              id="requests"
+              spellcheck="false"
+              autocapitalize="off"
+              autocomplete="off"
+              aria-describedby="requests-help"
+            ></textarea
+            ><label class="check-row" for="auto-assets"
+              ><input type="checkbox" id="auto-assets" /><span
+                data-i18n="autoAssets"
+                >スクリプト・画像・フォント等の静的アセットも自動で比較する</span
+              ></label
+            >
+          </section>
+        </div>
+        <div class="attestation">
+          <label class="check-row" for="static-only"
+            ><input id="static-only" type="checkbox" /><span
+              data-i18n="staticOnly"
+              >両サービスとも静的サイトのみ。Functions・Workers
+              などの実行時処理はありません</span
+            ></label
+          >
+          <p
+            id="attestation-help"
+            class="field-help"
+            data-i18n="attestationHelp"
+          >
+            未確認の項目がある場合も比較できますが、結果は UNKNOWN
+            になります。一覧の編集・読込で完全性の確認が外れます。JSON
+            内の確認値より、ここでの選択を優先します。
+          </p>
+        </div>
+        <div class="run-bar">
+          <div class="run-buttons">
+            <button id="compare" class="button primary" aria-busy="false">
+              <span data-i18n="compare">行き先を比較</span
+              ><span aria-hidden="true">↗</span></button
+            ><button
+              id="cancel"
+              class="button secondary"
+              disabled
+              data-i18n="cancel"
+            >
+              中止
+            </button>
+          </div>
+          <p id="status" role="status" aria-live="polite"></p>
+        </div>
+        <div id="error" class="error-box" role="alert" hidden></div>
+      </section>
+      <section class="shell results-section" aria-labelledby="results-title">
+        <div id="empty" class="empty-state">
+          <span class="empty-icon" aria-hidden="true">↔</span>
+          <div>
+            <h2 data-i18n="emptyTitle">ルートの差分を、ここに。</h2>
+            <p data-i18n="emptyDescription">
+              サンプルを比較するか、設定・一覧・リクエストを入力してください。
+            </p>
+          </div>
+          <span class="empty-arrow" aria-hidden="true">↗</span>
+        </div>
+        <div id="results" hidden>
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow" data-i18n="resultsEyebrow">02 / 結果と証拠</p>
+              <h2 id="results-title" data-i18n="resultsTitle">
+                行き先の差を見つける
+              </h2>
+            </div>
+            <div class="export-buttons">
+              <button id="download-json" class="button secondary" disabled>
+                JSON ↓</button
+              ><button id="download-html" class="button secondary" disabled>
+                HTML ↓
+              </button>
+            </div>
+          </div>
+          <div class="metrics">
+            <div class="metric" data-metric="total">
+              <span data-i18n="total">比較したパス</span><strong>0</strong>
+            </div>
+            <div class="metric changed" data-metric="changed">
+              <span data-i18n="changed">変化あり</span><strong>0</strong>
+            </div>
+            <div class="metric unknown" data-metric="unknown">
+              <span data-i18n="unknown">未確定</span><strong>0</strong>
+            </div>
+            <div class="metric same" data-metric="same">
+              <span data-i18n="same">同じ行き先</span><strong>0</strong>
+            </div>
+          </div>
+          <div id="interception-banner" class="interception-banner" hidden>
+            <span class="warning-icon" aria-hidden="true">!</span>
+            <div>
+              <h3 id="interception-title"></h3>
+              <p data-i18n="interceptionHelp">
+                静的ファイルへのリクエストがルールに捕捉されています。JavaScript
+                や CSS の代わりに別の内容が返る可能性があります。MIME
+                や実際の応答本文は検証していません。
+              </p>
+            </div>
+            <button
+              class="text-button"
+              id="filter-interceptions"
+              data-i18n="inspect"
+            >
+              証拠を見る ↗
+            </button>
+          </div>
+          <p id="coverage-note" class="report-note"></p>
+          <p class="report-note" data-i18n="machineNote">
+            判定・操作ラベルは日本語対応。エンジンの理由・証拠・エラーメッセージ・出力
+            HTML は英語です。
+          </p>
+          <details id="diagnostics" class="diagnostics" hidden>
+            <summary id="diagnostics-title"></summary>
+            <ul id="diagnostics-list"></ul>
+          </details>
+          <div class="filter-bar">
+            <div
+              class="filters"
+              role="group"
+              aria-label="Filter verdicts"
+              data-i18n-aria="filterLabel"
+            >
+              <button data-filter="all" aria-pressed="true" data-i18n="all">
+                すべて</button
+              ><button
+                data-filter="CHANGED"
+                aria-pressed="false"
+                data-i18n="changed"
+              >
+                変化あり</button
+              ><button
+                data-filter="UNKNOWN"
+                aria-pressed="false"
+                data-i18n="unknown"
+              >
+                未確定</button
+              ><button data-filter="SAME" aria-pressed="false" data-i18n="same">
+                同じ行き先</button
+              ><button
+                data-filter="intercepted"
+                aria-pressed="false"
+                data-i18n="interceptionFilter"
+              >
+                ファイル捕捉
+              </button>
+            </div>
+            <label class="search-label"
+              ><span class="sr-only" data-i18n="search">パスを絞り込む</span
+              ><input
+                id="search"
+                type="search"
+                placeholder="パスを絞り込む"
+                data-i18n-placeholder="search"
+                autocomplete="off"
+            /></label>
+          </div>
+          <p id="visible-count" class="field-help" role="status"></p>
+          <div id="result-cards" class="result-cards"></div>
+          <button
+            id="show-more"
+            class="button secondary show-more"
+            hidden
+            data-i18n="showMore"
+          >
+            さらに 100 件を表示
+          </button>
+          <details class="provenance">
+            <summary data-i18n="provenanceTitle">
+              比較の識別情報・再現性
+            </summary>
+            <pre id="provenance"></pre>
+          </details>
+        </div>
+      </section>
+      <section
+        class="shell limits-section"
+        id="limits"
+        aria-labelledby="limits-title"
+      >
+        <div>
+          <p class="eyebrow" data-i18n="limitsEyebrow">モデルを知って使う</p>
+          <h2 id="limits-title" data-i18n="limitsTitle">
+            確かめられること。<br />まだ確かめられないこと。
+          </h2>
+        </div>
+        <div class="limit-details">
+          <p data-i18n="limitsIntro">
+            SAME
+            は、このパス・入力・モデルでの最初の動作が一致したという意味です。サイト全体の同等性や、移行成功を保証しません。
+          </p>
+          <ul>
+            <li data-i18n="limit1">
+              静的配信と、対応する _redirects
+              のみ。ファイル一覧が不完全、または実行環境が未確認なら UNKNOWN。
+            </li>
+            <li data-i18n="limit2">
+              Functions・Workers、条件、URL の正規化、HTML
+              の補完など、範囲外の動作は断定しません。
+            </li>
+            <li data-i18n="limit3">
+              外部の行き先は取得しません。最大 8
+              ステップのリダイレクト追跡は参考情報で、判定は最初の動作を比較します。
+            </li>
+            <li data-i18n="limit4">
+              一覧は最大 10,000 パス、比較は自動追加分を含め最大 2,000
+              パス。各パスは最大 2,048 文字、演算は 3,000,000 単位まで。
+            </li>
+            <li data-i18n="limit5">
+              UI の読込は各ファイル 4 MiB、各テキスト 4,194,304
+              文字まで。エンジンで扱う一覧とリクエストのテキストは、それぞれ最大
+              1,000,000 文字です。データはこのタブ内だけで処理し、保存しません。
+            </li>
+          </ul>
+          <p class="limit-footnote" data-i18n="limitFootnote">
+            最終確認は、実際のステージング環境で行ってください。
+          </p>
+        </div>
+      </section>
+    </main>
+    <footer class="shell site-footer">
+      <span>ROUTE WITNESS <span class="muted">/ 0.1</span></span
+      ><span data-i18n="footer">小さな差分を、移行前に。</span
+      ><a href="./THIRD_PARTY_NOTICES.md" data-i18n="notices">表記</a>
+    </footer>
+    <dialog id="evidence-dialog" aria-labelledby="evidence-title">
+      <div class="drawer-header">
+        <p class="eyebrow" data-i18n="evidenceEyebrow">ルートの証拠</p>
+        <button
+          id="close-evidence"
+          class="icon-button"
+          aria-label="Close evidence"
+          data-i18n-aria="closeEvidence"
+        >
+          ×
+        </button>
+      </div>
+      <h2 id="evidence-title"></h2>
+      <p id="evidence-verdict"></p>
+      <p id="evidence-reason" class="report-note"></p>
+      <div id="evidence-content"></div>
+      <p class="field-help" data-i18n="evidenceFootnote">
+        行番号は各設定の物理行です。証拠と追跡はエンジンが返した英語表記です。リンク先へのアクセスは行いません。
+      </p>
+    </dialog>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "name": "route-witness",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Asset-aware Netlify to Cloudflare Pages request-outcome comparison",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "route-witness": "./src/cli.js"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:core": "node scripts/build.mjs --core-only",
+    "test": "npm run build:core && node --test tests/*.test.js",
+    "typecheck": "tsc --noEmit",
+    "serve": "node scripts/serve.mjs",
+    "test:browser": "node tests/browser/browser-test.mjs",
+    "check": "npm run format:check && npm run typecheck && npm test && npm run build",
+    "format:check": "prettier --check \"src/*.{js,ts}\" \"scripts/*.mjs\" \"web/*.{js,html,css}\" \"tests/*.js\" \"tests/browser/*.mjs\" package.json tsconfig.json .github/workflows/ci.yml"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.0",
+    "esbuild": "0.25.10",
+    "prettier": "3.6.2",
+    "typescript": "5.9.3"
+  }
+}

@@ -1,0 +1,1450 @@
+{
+  "schemaVersion": 1,
+  "evidenceLevel": "official-local-emulator-http",
+  "startedAt": "2026-10-03T11:08:18.852Z",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "arch": "x64",
+  "pins": {
+    "netlify-cli": "27.10.2",
+    "wrangler": "4.147.0"
+  },
+  "fixturesSha256": "b449ac3ebd1d631ed1165e57999d58a995135fa9e4e42ac4fbbde248b39fb254",
+  "fixtureSnapshot": {
+    "schemaVersion": 1,
+    "description": "Independently authored official-emulator requests. Expected values are test assertions informed by docs and local observations; observation artifacts alone contain measured fingerprints.",
+    "scenarios": [
+      {
+        "id": "core",
+        "rules": [
+          "/default /target.txt",
+          "/assets/app.js /shell.html 200",
+          "/existing.txt /target.txt 301",
+          "/a /b.txt 200",
+          "/b.txt /c.txt 200",
+          "/duplicate /first 301",
+          "/duplicate /second 302",
+          "/code303 /target.txt 303",
+          "/code307 /target.txt 307",
+          "/code308 /target.txt 308",
+          "/order/special /specific 301",
+          "/order/* /dynamic/:splat 302",
+          "/precedence/* /dynamic/:splat 302",
+          "/precedence/special /specific 301"
+        ],
+        "requests": [
+          {
+            "path": "/default",
+            "expected": {
+              "netlify": {
+                "status": 301,
+                "location": "/target.txt"
+              },
+              "cloudflare": {
+                "status": 302,
+                "location": "/target.txt"
+              }
+            }
+          },
+          {
+            "path": "/assets/style.css",
+            "expected": {
+              "netlify": {
+                "status": 200,
+                "bodyAsset": "assets/style.css"
+              },
+              "cloudflare": {
+                "status": 200,
+                "bodyAsset": "assets/style.css"
+              }
+            }
+          },
+          {
+            "path": "/assets/app.js",
+            "expected": {
+              "netlify": {
+                "status": 200,
+                "bodyAsset": "assets/app.js"
+              },
+              "cloudflare": {
+                "status": 308,
+                "location": "/shell"
+              }
+            },
+            "investigate": "Wrangler 4.147.0 HTML canonicalization follows rewrite target; original 200 hypothesis failed"
+          },
+          {
+            "path": "/existing.txt",
+            "expected": {
+              "netlify": {
+                "status": 200,
+                "bodyAsset": "existing.txt"
+              },
+              "cloudflare": {
+                "status": 301,
+                "location": "/target.txt"
+              }
+            }
+          },
+          {
+            "path": "/a",
+            "expected": {
+              "netlify": {
+                "status": 200,
+                "bodyAsset": "b.txt"
+              },
+              "cloudflare": {
+                "status": 200,
+                "bodyAsset": "b.txt"
+              }
+            }
+          },
+          {
+            "path": "/b.txt",
+            "expected": {
+              "netlify": {
+                "status": 200,
+                "bodyAsset": "b.txt"
+              },
+              "cloudflare": {
+                "status": 200,
+                "bodyAsset": "c.txt"
+              }
+            }
+          },
+          {
+            "path": "/duplicate",
+            "expected": {
+              "netlify": {
+                "status": 301,
+                "location": "/first"
+              },
+              "cloudflare": {
+                "status": 301,
+                "location": "/first"
+              }
+            }
+          },
+          {
+            "path": "/order/special",
+            "expected": {
+              "netlify": {
+                "status": 301,
+                "location": "/specific"
+              },
+              "cloudflare": {
+                "status": 301,
+                "location": "/specific"
+              }
+            }
+          },
+          {
+            "path": "/order/other",
+            "expected": {
+              "netlify": {
+                "status": 302,
+                "location": "/dynamic/other"
+              },
+              "cloudflare": {
+                "status": 302,
+                "location": "/dynamic/other"
+              }
+            }
+          },
+          {
+            "path": "/precedence/special",
+            "expected": {
+              "netlify": {
+                "status": 302,
+                "location": "/dynamic/special"
+              },
+              "cloudflare": {
+                "status": 302,
+                "location": "/dynamic/special"
+              }
+            },
+            "investigate": "Cloudflare exact rule occurs after first dynamic rule"
+          },
+          {
+            "path": "/code303",
+            "expected": {
+              "cloudflare": {
+                "status": 303,
+                "location": "/target.txt"
+              }
+            },
+            "investigate": "Netlify 303 not explicitly enumerated by current redirect docs"
+          },
+          {
+            "path": "/code307",
+            "expected": {
+              "cloudflare": {
+                "status": 307,
+                "location": "/target.txt"
+              }
+            },
+            "investigate": "Netlify docs explicitly mark 307 unsupported; record local divergence"
+          },
+          {
+            "path": "/code308",
+            "expected": {
+              "cloudflare": {
+                "status": 308,
+                "location": "/target.txt"
+              }
+            },
+            "investigate": "Netlify 308 not explicitly enumerated by current redirect docs"
+          },
+          {
+            "path": "/missing",
+            "investigate": "Explicit 404.html prevents implicit Cloudflare SPA fallback"
+          }
+        ]
+      },
+      {
+        "id": "force-and-shadow",
+        "rulesByPlatform": {
+          "netlify": [
+            "/assets/app.js /shell.html 200!",
+            "/shadow.txt /first 302",
+            "/shadow.txt /second 302!"
+          ],
+          "cloudflare": [
+            "/assets/app.js /shell.html 200",
+            "/shadow.txt /first 302",
+            "/shadow.txt /second 302"
+          ]
+        },
+        "requests": [
+          {
+            "path": "/assets/app.js",
+            "expected": {
+              "netlify": {
+                "status": 200,
+                "bodyAsset": "shell.html"
+              },
+              "cloudflare": {
+                "status": 308,
+                "location": "/shell"
+              }
+            },
+            "investigate": "Wrangler 4.147.0 HTML canonicalization follows rewrite target; original 200 hypothesis failed"
+          },
+          {
+            "path": "/shadow.txt",
+            "expected": {
+              "netlify": {
+                "status": 200,
+                "bodyAsset": "shadow.txt"
+              },
+              "cloudflare": {
+                "status": 302,
+                "location": "/first"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "catchall-index",
+        "rules": [
+          "/* /index.html 200"
+        ],
+        "requests": [
+          {
+            "path": "/assets/app.js",
+            "expected": {
+              "netlify": {
+                "status": 200,
+                "bodyAsset": "assets/app.js"
+              },
+              "cloudflare": {
+                "status": 200,
+                "bodyAsset": "assets/app.js"
+              }
+            },
+            "investigate": "Wrangler parser currently rejects wildcard-to-index even with 200"
+          },
+          {
+            "path": "/missing",
+            "expected": {
+              "netlify": {
+                "status": 200,
+                "bodyAsset": "index.html"
+              },
+              "cloudflare": {
+                "status": 404,
+                "bodyAsset": "404.html"
+              }
+            },
+            "investigate": "Observe rejected rule vs rewrite; 404.html is present"
+          }
+        ]
+      },
+      {
+        "id": "catchall-shell",
+        "rules": [
+          "/* /shell.html 200"
+        ],
+        "requests": [
+          {
+            "path": "/assets/app.js",
+            "expected": {
+              "netlify": {
+                "status": 200,
+                "bodyAsset": "assets/app.js"
+              },
+              "cloudflare": {
+                "status": 308,
+                "location": "/shell"
+              }
+            },
+            "investigate": "Wrangler 4.147.0 HTML canonicalization follows rewrite target; original 200 hypothesis failed"
+          },
+          {
+            "path": "/missing",
+            "expected": {
+              "netlify": {
+                "status": 200,
+                "bodyAsset": "shell.html"
+              },
+              "cloudflare": {
+                "status": 308,
+                "location": "/shell"
+              }
+            },
+            "investigate": "Wrangler 4.147.0 HTML canonicalization follows rewrite target; original 200 hypothesis failed"
+          }
+        ]
+      },
+      {
+        "id": "catchall-text",
+        "rules": [
+          "/* /target.txt 200"
+        ],
+        "requests": [
+          {
+            "path": "/assets/app.js",
+            "expected": {
+              "netlify": {
+                "status": 200,
+                "bodyAsset": "assets/app.js"
+              },
+              "cloudflare": {
+                "status": 200,
+                "bodyAsset": "target.txt"
+              }
+            }
+          },
+          {
+            "path": "/missing",
+            "expected": {
+              "netlify": {
+                "status": 200,
+                "bodyAsset": "target.txt"
+              },
+              "cloudflare": {
+                "status": 200,
+                "bodyAsset": "target.txt"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "html-alias",
+        "rules": [
+          "/assets/app.js /shell 200"
+        ],
+        "requests": [
+          {
+            "path": "/assets/app.js",
+            "expected": {
+              "netlify": {
+                "status": 200,
+                "bodyAsset": "assets/app.js"
+              },
+              "cloudflare": {
+                "status": 200,
+                "bodyAsset": "shell.html"
+              }
+            },
+            "investigate": "Explicit extensionless rewrite target backed by shell.html; alias profile remains bounded"
+          }
+        ]
+      }
+    ]
+  },
+  "productionParityClaimed": false,
+  "netlifyEdgeFunctionsDisabled": true,
+  "runs": [
+    {
+      "scenario": "core",
+      "platform": "netlify",
+      "state": "observed",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "<oracle>/node_modules/netlify-cli/bin/run.js",
+        "dev",
+        "--offline",
+        "--internal-disable-edge-functions",
+        "--dir",
+        "<temporary-fixture>/public",
+        "--framework",
+        "#static",
+        "--port",
+        "38519",
+        "--no-open",
+        "--skip-gitignore"
+      ],
+      "observations": [
+        {
+          "path": "/default",
+          "observed": {
+            "status": 301,
+            "location": "/target.txt",
+            "contentType": null,
+            "bodyBytes": 26,
+            "bodySha256": "05df3bcf36665294fae9168938f89d68051425517f7e427609832286fba079af"
+          },
+          "expectedHypothesis": {
+            "status": 301,
+            "location": "/target.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/assets/style.css",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/css; charset=utf-8",
+            "bodyBytes": 24,
+            "bodySha256": "a6a1157c718a8e088a2f5002d00e4441e7fe6c2a07c7324f5f9d11be55a1552d"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "assets/style.css"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/assets/app.js",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "application/javascript; charset=utf-8",
+            "bodyBytes": 33,
+            "bodySha256": "b4829d181af299f2b5240167efe61e1e84cb106c68eac98275b5f101ad1fcc68"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "assets/app.js"
+          },
+          "investigation": "Wrangler 4.147.0 HTML canonicalization follows rewrite target; original 200 hypothesis failed",
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/existing.txt",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/plain; charset=utf-8",
+            "bodyBytes": 23,
+            "bodySha256": "d4c25b62dd251d7c571c7ecc169706049628ff3b45d719d044d75258a117abcc"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "existing.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/a",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/plain; charset=utf-8",
+            "bodyBytes": 16,
+            "bodySha256": "dc519ae78e8e60f6824e44ff0871949daae6e2ad6de83fc04b35b40d1a737444"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "b.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/b.txt",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/plain; charset=utf-8",
+            "bodyBytes": 16,
+            "bodySha256": "dc519ae78e8e60f6824e44ff0871949daae6e2ad6de83fc04b35b40d1a737444"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "b.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/duplicate",
+          "observed": {
+            "status": 301,
+            "location": "/first",
+            "contentType": null,
+            "bodyBytes": 21,
+            "bodySha256": "41766e56755821bbd1da679cb14ac0f6c8a6446da0cbd9150b3eaa72b27bb2b5"
+          },
+          "expectedHypothesis": {
+            "status": 301,
+            "location": "/first"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/order/special",
+          "observed": {
+            "status": 301,
+            "location": "/specific",
+            "contentType": null,
+            "bodyBytes": 24,
+            "bodySha256": "a93ce5cf794bfb18a708b8ca55f0b217c084314b7a9c4ab045ba2dcf0265e15e"
+          },
+          "expectedHypothesis": {
+            "status": 301,
+            "location": "/specific"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/order/other",
+          "observed": {
+            "status": 302,
+            "location": "/dynamic/other",
+            "contentType": null,
+            "bodyBytes": 29,
+            "bodySha256": "b0a304e53ac73f10d2efa4b5af8d91f1ec23e41c1d0476c59152f17dfc5c672c"
+          },
+          "expectedHypothesis": {
+            "status": 302,
+            "location": "/dynamic/other"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/precedence/special",
+          "observed": {
+            "status": 302,
+            "location": "/dynamic/special",
+            "contentType": null,
+            "bodyBytes": 31,
+            "bodySha256": "d05e81466c3f5b4932832a63fe126c127d6a312e02577e1132a0bf03b9d509c5"
+          },
+          "expectedHypothesis": {
+            "status": 302,
+            "location": "/dynamic/special"
+          },
+          "investigation": "Cloudflare exact rule occurs after first dynamic rule",
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/code303",
+          "observed": {
+            "status": 303,
+            "location": "/target.txt",
+            "contentType": null,
+            "bodyBytes": 26,
+            "bodySha256": "05df3bcf36665294fae9168938f89d68051425517f7e427609832286fba079af"
+          },
+          "expectedHypothesis": null,
+          "investigation": "Netlify 303 not explicitly enumerated by current redirect docs",
+          "hypothesisResult": "unasserted",
+          "failures": []
+        },
+        {
+          "path": "/code307",
+          "observed": {
+            "status": 307,
+            "location": "/target.txt",
+            "contentType": null,
+            "bodyBytes": 26,
+            "bodySha256": "05df3bcf36665294fae9168938f89d68051425517f7e427609832286fba079af"
+          },
+          "expectedHypothesis": null,
+          "investigation": "Netlify docs explicitly mark 307 unsupported; record local divergence",
+          "hypothesisResult": "unasserted",
+          "failures": []
+        },
+        {
+          "path": "/code308",
+          "observed": {
+            "status": 308,
+            "location": "/target.txt",
+            "contentType": null,
+            "bodyBytes": 26,
+            "bodySha256": "05df3bcf36665294fae9168938f89d68051425517f7e427609832286fba079af"
+          },
+          "expectedHypothesis": null,
+          "investigation": "Netlify 308 not explicitly enumerated by current redirect docs",
+          "hypothesisResult": "unasserted",
+          "failures": []
+        },
+        {
+          "path": "/missing",
+          "observed": {
+            "status": 404,
+            "location": null,
+            "contentType": "text/html; charset=utf-8",
+            "bodyBytes": 18,
+            "bodySha256": "1caa513a7442ffb8fc886af51b51e24d5b9586dba63caa6db0d702c7b2aa4f78"
+          },
+          "expectedHypothesis": null,
+          "investigation": "Explicit 404.html prevents implicit Cloudflare SPA fallback",
+          "hypothesisResult": "unasserted",
+          "failures": []
+        }
+      ],
+      "log": "⬥ Using simple static server because '--dir' flag was specified\n⬥ Running static server from \"route-witness-oracle-do4jS6/public\"\n⬥ Setting up local dev server\n\n⬥ Static server listening to 3999\n⬥ Edge functions are disabled. Run without the --internal-disable-edge-functions flag to enable them.\n\n   ╭──────────────────────── ⬥  ────────────────────────╮\n   │                                                    │\n   │   Local dev server ready: http://localhost:38519   │\n   │                                                    │\n   ╰────────────────────────────────────────────────────╯\n\n(node:37) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.\n(Use `node --trace-deprecation ...` to show where the warning was created)\n⬥ Redirecting /default to /target.txt\n⬥ Rewrote URL to /b.txt\n⬥ Redirecting /duplicate to /first\n⬥ Redirecting /order/special to /specific\n⬥ Redirecting /order/other to /dynamic/other\n⬥ Redirecting /precedence/special to /dynamic/special\n⬥ Redirecting /code303 to /target.txt\n⬥ Redirecting /code307 to /target.txt\n⬥ Redirecting /code308 to /target.txt\n"
+    },
+    {
+      "scenario": "core",
+      "platform": "cloudflare",
+      "state": "observed",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "<oracle>/node_modules/wrangler/bin/wrangler.js",
+        "pages",
+        "dev",
+        "<temporary-fixture>/public",
+        "--ip",
+        "127.0.0.1",
+        "--port",
+        "46755",
+        "--inspector-port",
+        "0",
+        "--compatibility-date",
+        "2026-10-03",
+        "--show-interactive-dev-session=false",
+        "--log-level",
+        "info"
+      ],
+      "observations": [
+        {
+          "path": "/default",
+          "observed": {
+            "status": 302,
+            "location": "/target.txt",
+            "contentType": "text/plain;charset=UTF-8",
+            "bodyBytes": 26,
+            "bodySha256": "05df3bcf36665294fae9168938f89d68051425517f7e427609832286fba079af"
+          },
+          "expectedHypothesis": {
+            "status": 302,
+            "location": "/target.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/assets/style.css",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/css; charset=utf-8",
+            "bodyBytes": 24,
+            "bodySha256": "a6a1157c718a8e088a2f5002d00e4441e7fe6c2a07c7324f5f9d11be55a1552d"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "assets/style.css"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/assets/app.js",
+          "observed": {
+            "status": 308,
+            "location": "/shell",
+            "contentType": null,
+            "bodyBytes": 0,
+            "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "expectedHypothesis": {
+            "status": 308,
+            "location": "/shell"
+          },
+          "investigation": "Wrangler 4.147.0 HTML canonicalization follows rewrite target; original 200 hypothesis failed",
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/existing.txt",
+          "observed": {
+            "status": 301,
+            "location": "/target.txt",
+            "contentType": "text/plain;charset=UTF-8",
+            "bodyBytes": 26,
+            "bodySha256": "05df3bcf36665294fae9168938f89d68051425517f7e427609832286fba079af"
+          },
+          "expectedHypothesis": {
+            "status": 301,
+            "location": "/target.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/a",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/plain; charset=utf-8",
+            "bodyBytes": 16,
+            "bodySha256": "dc519ae78e8e60f6824e44ff0871949daae6e2ad6de83fc04b35b40d1a737444"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "b.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/b.txt",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/plain; charset=utf-8",
+            "bodyBytes": 16,
+            "bodySha256": "4e9c375b3a854078ea75a75a01c17cc38fec68c39ded03546ed0b6f9b839f95f"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "c.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/duplicate",
+          "observed": {
+            "status": 301,
+            "location": "/first",
+            "contentType": "text/plain;charset=UTF-8",
+            "bodyBytes": 21,
+            "bodySha256": "41766e56755821bbd1da679cb14ac0f6c8a6446da0cbd9150b3eaa72b27bb2b5"
+          },
+          "expectedHypothesis": {
+            "status": 301,
+            "location": "/first"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/order/special",
+          "observed": {
+            "status": 301,
+            "location": "/specific",
+            "contentType": "text/plain;charset=UTF-8",
+            "bodyBytes": 24,
+            "bodySha256": "a93ce5cf794bfb18a708b8ca55f0b217c084314b7a9c4ab045ba2dcf0265e15e"
+          },
+          "expectedHypothesis": {
+            "status": 301,
+            "location": "/specific"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/order/other",
+          "observed": {
+            "status": 302,
+            "location": "/dynamic/other",
+            "contentType": "text/plain;charset=UTF-8",
+            "bodyBytes": 29,
+            "bodySha256": "b0a304e53ac73f10d2efa4b5af8d91f1ec23e41c1d0476c59152f17dfc5c672c"
+          },
+          "expectedHypothesis": {
+            "status": 302,
+            "location": "/dynamic/other"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/precedence/special",
+          "observed": {
+            "status": 302,
+            "location": "/dynamic/special",
+            "contentType": "text/plain;charset=UTF-8",
+            "bodyBytes": 31,
+            "bodySha256": "d05e81466c3f5b4932832a63fe126c127d6a312e02577e1132a0bf03b9d509c5"
+          },
+          "expectedHypothesis": {
+            "status": 302,
+            "location": "/dynamic/special"
+          },
+          "investigation": "Cloudflare exact rule occurs after first dynamic rule",
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/code303",
+          "observed": {
+            "status": 303,
+            "location": "/target.txt",
+            "contentType": "text/plain;charset=UTF-8",
+            "bodyBytes": 26,
+            "bodySha256": "05df3bcf36665294fae9168938f89d68051425517f7e427609832286fba079af"
+          },
+          "expectedHypothesis": {
+            "status": 303,
+            "location": "/target.txt"
+          },
+          "investigation": "Netlify 303 not explicitly enumerated by current redirect docs",
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/code307",
+          "observed": {
+            "status": 307,
+            "location": "/target.txt",
+            "contentType": "text/plain;charset=UTF-8",
+            "bodyBytes": 26,
+            "bodySha256": "05df3bcf36665294fae9168938f89d68051425517f7e427609832286fba079af"
+          },
+          "expectedHypothesis": {
+            "status": 307,
+            "location": "/target.txt"
+          },
+          "investigation": "Netlify docs explicitly mark 307 unsupported; record local divergence",
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/code308",
+          "observed": {
+            "status": 308,
+            "location": "/target.txt",
+            "contentType": null,
+            "bodyBytes": 0,
+            "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "expectedHypothesis": {
+            "status": 308,
+            "location": "/target.txt"
+          },
+          "investigation": "Netlify 308 not explicitly enumerated by current redirect docs",
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/missing",
+          "observed": {
+            "status": 404,
+            "location": null,
+            "contentType": "text/html; charset=utf-8",
+            "bodyBytes": 18,
+            "bodySha256": "1caa513a7442ffb8fc886af51b51e24d5b9586dba63caa6db0d702c7b2aa4f78"
+          },
+          "expectedHypothesis": null,
+          "investigation": "Explicit 404.html prevents implicit Cloudflare SPA fallback",
+          "hypothesisResult": "unasserted",
+          "failures": []
+        }
+      ],
+      "log": "\u001b[33m▲ \u001b[43;33m[\u001b[43;30mWARNING\u001b[43;33m]\u001b[0m \u001b[1mFound 1 invalid redirect rule:\u001b[0m\n\n  ▶︎ Ignoring duplicate rule for path /duplicate.\n      at public/_redirects:7 | /duplicate /second 302\n  \n  \n\n\nThe redirect rule /precedence/special → 301 /specific could be made more performant by bringing it above any lines with splats or placeholders.\n[wrangler:warn] Unable to fetch the `Request.cf` object! Falling back to a default placeholder...\nError: getaddrinfo EAI_AGAIN workers.cloudflare.com\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n[wrangler:warn] Unable to fetch the `Request.cf` object! Falling back to a default placeholder...\nError: getaddrinfo EAI_AGAIN workers.cloudflare.com\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n[wrangler:info] Ready on http://127.0.0.1:46755\n[wrangler:info] GET /assets/style.css 200 OK (159ms)\n[wrangler:info] GET /default 302 Found (3ms)\n[wrangler:info] GET /assets/style.css 200 OK (3ms)\n[wrangler:info] GET /assets/app.js 308 Permanent Redirect (4ms)\n[wrangler:info] GET /existing.txt 301 Moved Permanently (2ms)\n[wrangler:info] GET /a 200 OK (2ms)\n[wrangler:info] GET /b.txt 200 OK (2ms)\n[wrangler:info] GET /duplicate 301 Moved Permanently (2ms)\n[wrangler:info] GET /order/special 301 Moved Permanently (2ms)\n[wrangler:info] GET /order/other 302 Found (2ms)\n[wrangler:info] GET /precedence/special 302 Found (2ms)\n[wrangler:info] GET /code303 303 See Other (2ms)\n[wrangler:info] GET /code307 307 Temporary Redirect (3ms)\n[wrangler:info] GET /code308 308 Permanent Redirect (2ms)\n[wrangler:info] GET /missing 404 Not Found (3ms)\n"
+    },
+    {
+      "scenario": "force-and-shadow",
+      "platform": "netlify",
+      "state": "observed",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "<oracle>/node_modules/netlify-cli/bin/run.js",
+        "dev",
+        "--offline",
+        "--internal-disable-edge-functions",
+        "--dir",
+        "<temporary-fixture>/public",
+        "--framework",
+        "#static",
+        "--port",
+        "41873",
+        "--no-open",
+        "--skip-gitignore"
+      ],
+      "observations": [
+        {
+          "path": "/assets/app.js",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/html; charset=utf-8",
+            "bodyBytes": 20,
+            "bodySha256": "feae25d1f0fd7b0c84f4d05d1dd443e72f7f8bf9f964311449d5ee9425c7c0b6"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "shell.html"
+          },
+          "investigation": "Wrangler 4.147.0 HTML canonicalization follows rewrite target; original 200 hypothesis failed",
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/shadow.txt",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/plain; charset=utf-8",
+            "bodyBytes": 21,
+            "bodySha256": "631eb326b247c7a8b0cec3c9e28e947cbe598219f410317ac25abd1fa04f0b19"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "shadow.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        }
+      ],
+      "log": "⬥ Using simple static server because '--dir' flag was specified\n⬥ Running static server from \"route-witness-oracle-viLwI2/public\"\n⬥ Setting up local dev server\n\n⬥ Static server listening to 3999\n⬥ Edge functions are disabled. Run without the --internal-disable-edge-functions flag to enable them.\n\n   ╭──────────────────────── ⬥  ────────────────────────╮\n   │                                                    │\n   │   Local dev server ready: http://localhost:41873   │\n   │                                                    │\n   ╰────────────────────────────────────────────────────╯\n\n(node:115) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.\n(Use `node --trace-deprecation ...` to show where the warning was created)\n⬥ Rewrote URL to /shell.html\n"
+    },
+    {
+      "scenario": "force-and-shadow",
+      "platform": "cloudflare",
+      "state": "observed",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "<oracle>/node_modules/wrangler/bin/wrangler.js",
+        "pages",
+        "dev",
+        "<temporary-fixture>/public",
+        "--ip",
+        "127.0.0.1",
+        "--port",
+        "44857",
+        "--inspector-port",
+        "0",
+        "--compatibility-date",
+        "2026-10-03",
+        "--show-interactive-dev-session=false",
+        "--log-level",
+        "info"
+      ],
+      "observations": [
+        {
+          "path": "/assets/app.js",
+          "observed": {
+            "status": 308,
+            "location": "/shell",
+            "contentType": null,
+            "bodyBytes": 0,
+            "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "expectedHypothesis": {
+            "status": 308,
+            "location": "/shell"
+          },
+          "investigation": "Wrangler 4.147.0 HTML canonicalization follows rewrite target; original 200 hypothesis failed",
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/shadow.txt",
+          "observed": {
+            "status": 302,
+            "location": "/first",
+            "contentType": "text/plain;charset=UTF-8",
+            "bodyBytes": 21,
+            "bodySha256": "41766e56755821bbd1da679cb14ac0f6c8a6446da0cbd9150b3eaa72b27bb2b5"
+          },
+          "expectedHypothesis": {
+            "status": 302,
+            "location": "/first"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        }
+      ],
+      "log": "\u001b[33m▲ \u001b[43;33m[\u001b[43;30mWARNING\u001b[43;33m]\u001b[0m \u001b[1mFound 1 invalid redirect rule:\u001b[0m\n\n  ▶︎ Ignoring duplicate rule for path /shadow.txt.\n      at public/_redirects:3 | /shadow.txt /second 302\n  \n  \n\n\n[wrangler:warn] Unable to fetch the `Request.cf` object! Falling back to a default placeholder...\nError: getaddrinfo EAI_AGAIN workers.cloudflare.com\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n[wrangler:warn] Unable to fetch the `Request.cf` object! Falling back to a default placeholder...\nError: getaddrinfo EAI_AGAIN workers.cloudflare.com\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n[wrangler:info] Ready on http://127.0.0.1:44857\n[wrangler:info] GET /assets/style.css 200 OK (154ms)\n[wrangler:info] GET /assets/app.js 308 Permanent Redirect (3ms)\n[wrangler:info] GET /shadow.txt 302 Found (2ms)\n"
+    },
+    {
+      "scenario": "catchall-index",
+      "platform": "netlify",
+      "state": "observed",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "<oracle>/node_modules/netlify-cli/bin/run.js",
+        "dev",
+        "--offline",
+        "--internal-disable-edge-functions",
+        "--dir",
+        "<temporary-fixture>/public",
+        "--framework",
+        "#static",
+        "--port",
+        "35741",
+        "--no-open",
+        "--skip-gitignore"
+      ],
+      "observations": [
+        {
+          "path": "/assets/app.js",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "application/javascript; charset=utf-8",
+            "bodyBytes": 33,
+            "bodySha256": "b4829d181af299f2b5240167efe61e1e84cb106c68eac98275b5f101ad1fcc68"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "assets/app.js"
+          },
+          "investigation": "Wrangler parser currently rejects wildcard-to-index even with 200",
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/missing",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/html; charset=utf-8",
+            "bodyBytes": 20,
+            "bodySha256": "bbe148837665693f53c8649f9d6073b003ca6f73ce9316b7d8db83b6e696c96d"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "index.html"
+          },
+          "investigation": "Observe rejected rule vs rewrite; 404.html is present",
+          "hypothesisResult": "match",
+          "failures": []
+        }
+      ],
+      "log": "⬥ Using simple static server because '--dir' flag was specified\n⬥ Running static server from \"route-witness-oracle-dx0EJR/public\"\n⬥ Setting up local dev server\n\n⬥ Static server listening to 3999\n⬥ Edge functions are disabled. Run without the --internal-disable-edge-functions flag to enable them.\n\n   ╭──────────────────────── ⬥  ────────────────────────╮\n   │                                                    │\n   │   Local dev server ready: http://localhost:35741   │\n   │                                                    │\n   ╰────────────────────────────────────────────────────╯\n\n(node:195) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.\n(Use `node --trace-deprecation ...` to show where the warning was created)\n⬥ Rewrote URL to /index.html\n"
+    },
+    {
+      "scenario": "catchall-index",
+      "platform": "cloudflare",
+      "state": "observed",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "<oracle>/node_modules/wrangler/bin/wrangler.js",
+        "pages",
+        "dev",
+        "<temporary-fixture>/public",
+        "--ip",
+        "127.0.0.1",
+        "--port",
+        "40457",
+        "--inspector-port",
+        "0",
+        "--compatibility-date",
+        "2026-10-03",
+        "--show-interactive-dev-session=false",
+        "--log-level",
+        "info"
+      ],
+      "observations": [
+        {
+          "path": "/assets/app.js",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "application/javascript",
+            "bodyBytes": 33,
+            "bodySha256": "b4829d181af299f2b5240167efe61e1e84cb106c68eac98275b5f101ad1fcc68"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "assets/app.js"
+          },
+          "investigation": "Wrangler parser currently rejects wildcard-to-index even with 200",
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/missing",
+          "observed": {
+            "status": 404,
+            "location": null,
+            "contentType": "text/html; charset=utf-8",
+            "bodyBytes": 18,
+            "bodySha256": "1caa513a7442ffb8fc886af51b51e24d5b9586dba63caa6db0d702c7b2aa4f78"
+          },
+          "expectedHypothesis": {
+            "status": 404,
+            "bodyAsset": "404.html"
+          },
+          "investigation": "Observe rejected rule vs rewrite; 404.html is present",
+          "hypothesisResult": "match",
+          "failures": []
+        }
+      ],
+      "log": "\u001b[33m▲ \u001b[43;33m[\u001b[43;30mWARNING\u001b[43;33m]\u001b[0m \u001b[1mFound 1 invalid redirect rule:\u001b[0m\n\n  ▶︎ Infinite loop detected in this rule and has been ignored. This will cause a redirect to strip `.html` or `/index` and end up triggering this rule again. Please fix or remove this rule to silence this warning.\n      at public/_redirects:1 | /* /index.html 200\n  \n  \n\n\n[wrangler:warn] Unable to fetch the `Request.cf` object! Falling back to a default placeholder...\nError: getaddrinfo EAI_AGAIN workers.cloudflare.com\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n[wrangler:warn] Unable to fetch the `Request.cf` object! Falling back to a default placeholder...\nError: getaddrinfo EAI_AGAIN workers.cloudflare.com\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n[wrangler:info] Ready on http://127.0.0.1:40457\n[wrangler:info] GET /assets/style.css 200 OK (154ms)\n[wrangler:info] GET /assets/app.js 200 OK (3ms)\n[wrangler:info] GET /missing 404 Not Found (3ms)\n"
+    },
+    {
+      "scenario": "catchall-shell",
+      "platform": "netlify",
+      "state": "observed",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "<oracle>/node_modules/netlify-cli/bin/run.js",
+        "dev",
+        "--offline",
+        "--internal-disable-edge-functions",
+        "--dir",
+        "<temporary-fixture>/public",
+        "--framework",
+        "#static",
+        "--port",
+        "39457",
+        "--no-open",
+        "--skip-gitignore"
+      ],
+      "observations": [
+        {
+          "path": "/assets/app.js",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "application/javascript; charset=utf-8",
+            "bodyBytes": 33,
+            "bodySha256": "b4829d181af299f2b5240167efe61e1e84cb106c68eac98275b5f101ad1fcc68"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "assets/app.js"
+          },
+          "investigation": "Wrangler 4.147.0 HTML canonicalization follows rewrite target; original 200 hypothesis failed",
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/missing",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/html; charset=utf-8",
+            "bodyBytes": 20,
+            "bodySha256": "feae25d1f0fd7b0c84f4d05d1dd443e72f7f8bf9f964311449d5ee9425c7c0b6"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "shell.html"
+          },
+          "investigation": "Wrangler 4.147.0 HTML canonicalization follows rewrite target; original 200 hypothesis failed",
+          "hypothesisResult": "match",
+          "failures": []
+        }
+      ],
+      "log": "⬥ Using simple static server because '--dir' flag was specified\n⬥ Running static server from \"route-witness-oracle-OeMV8n/public\"\n⬥ Setting up local dev server\n\n⬥ Static server listening to 3999\n⬥ Edge functions are disabled. Run without the --internal-disable-edge-functions flag to enable them.\n\n   ╭──────────────────────── ⬥  ────────────────────────╮\n   │                                                    │\n   │   Local dev server ready: http://localhost:39457   │\n   │                                                    │\n   ╰────────────────────────────────────────────────────╯\n\n(node:275) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.\n(Use `node --trace-deprecation ...` to show where the warning was created)\n⬥ Rewrote URL to /shell.html\n"
+    },
+    {
+      "scenario": "catchall-shell",
+      "platform": "cloudflare",
+      "state": "observed",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "<oracle>/node_modules/wrangler/bin/wrangler.js",
+        "pages",
+        "dev",
+        "<temporary-fixture>/public",
+        "--ip",
+        "127.0.0.1",
+        "--port",
+        "38673",
+        "--inspector-port",
+        "0",
+        "--compatibility-date",
+        "2026-10-03",
+        "--show-interactive-dev-session=false",
+        "--log-level",
+        "info"
+      ],
+      "observations": [
+        {
+          "path": "/assets/app.js",
+          "observed": {
+            "status": 308,
+            "location": "/shell",
+            "contentType": null,
+            "bodyBytes": 0,
+            "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "expectedHypothesis": {
+            "status": 308,
+            "location": "/shell"
+          },
+          "investigation": "Wrangler 4.147.0 HTML canonicalization follows rewrite target; original 200 hypothesis failed",
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/missing",
+          "observed": {
+            "status": 308,
+            "location": "/shell",
+            "contentType": null,
+            "bodyBytes": 0,
+            "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "expectedHypothesis": {
+            "status": 308,
+            "location": "/shell"
+          },
+          "investigation": "Wrangler 4.147.0 HTML canonicalization follows rewrite target; original 200 hypothesis failed",
+          "hypothesisResult": "match",
+          "failures": []
+        }
+      ],
+      "log": "[wrangler:warn] Unable to fetch the `Request.cf` object! Falling back to a default placeholder...\nError: getaddrinfo EAI_AGAIN workers.cloudflare.com\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n[wrangler:warn] Unable to fetch the `Request.cf` object! Falling back to a default placeholder...\nError: getaddrinfo EAI_AGAIN workers.cloudflare.com\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n[wrangler:info] Ready on http://127.0.0.1:38673\n[wrangler:info] GET /assets/style.css 308 Permanent Redirect (127ms)\n[wrangler:info] GET /assets/app.js 308 Permanent Redirect (3ms)\n[wrangler:info] GET /missing 308 Permanent Redirect (2ms)\n"
+    },
+    {
+      "scenario": "catchall-text",
+      "platform": "netlify",
+      "state": "observed",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "<oracle>/node_modules/netlify-cli/bin/run.js",
+        "dev",
+        "--offline",
+        "--internal-disable-edge-functions",
+        "--dir",
+        "<temporary-fixture>/public",
+        "--framework",
+        "#static",
+        "--port",
+        "38889",
+        "--no-open",
+        "--skip-gitignore"
+      ],
+      "observations": [
+        {
+          "path": "/assets/app.js",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "application/javascript; charset=utf-8",
+            "bodyBytes": 33,
+            "bodySha256": "b4829d181af299f2b5240167efe61e1e84cb106c68eac98275b5f101ad1fcc68"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "assets/app.js"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/missing",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/plain; charset=utf-8",
+            "bodyBytes": 21,
+            "bodySha256": "2f6614af68f80178ca502e1955a8cf8ca8eced2a68def7df2c348997c17c6c43"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "target.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        }
+      ],
+      "log": "⬥ Using simple static server because '--dir' flag was specified\n⬥ Running static server from \"route-witness-oracle-rnJI0d/public\"\n⬥ Setting up local dev server\n\n⬥ Static server listening to 3999\n⬥ Edge functions are disabled. Run without the --internal-disable-edge-functions flag to enable them.\n\n   ╭──────────────────────── ⬥  ────────────────────────╮\n   │                                                    │\n   │   Local dev server ready: http://localhost:38889   │\n   │                                                    │\n   ╰────────────────────────────────────────────────────╯\n\n(node:349) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.\n(Use `node --trace-deprecation ...` to show where the warning was created)\n⬥ Rewrote URL to /target.txt\n"
+    },
+    {
+      "scenario": "catchall-text",
+      "platform": "cloudflare",
+      "state": "observed",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "<oracle>/node_modules/wrangler/bin/wrangler.js",
+        "pages",
+        "dev",
+        "<temporary-fixture>/public",
+        "--ip",
+        "127.0.0.1",
+        "--port",
+        "46465",
+        "--inspector-port",
+        "0",
+        "--compatibility-date",
+        "2026-10-03",
+        "--show-interactive-dev-session=false",
+        "--log-level",
+        "info"
+      ],
+      "observations": [
+        {
+          "path": "/assets/app.js",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/plain; charset=utf-8",
+            "bodyBytes": 21,
+            "bodySha256": "2f6614af68f80178ca502e1955a8cf8ca8eced2a68def7df2c348997c17c6c43"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "target.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/missing",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/plain; charset=utf-8",
+            "bodyBytes": 21,
+            "bodySha256": "2f6614af68f80178ca502e1955a8cf8ca8eced2a68def7df2c348997c17c6c43"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "target.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        }
+      ],
+      "log": "[wrangler:warn] Unable to fetch the `Request.cf` object! Falling back to a default placeholder...\nError: getaddrinfo EAI_AGAIN workers.cloudflare.com\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n[wrangler:warn] Unable to fetch the `Request.cf` object! Falling back to a default placeholder...\nError: getaddrinfo EAI_AGAIN workers.cloudflare.com\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n[wrangler:info] Ready on http://127.0.0.1:46465\n[wrangler:info] GET /assets/style.css 200 OK (135ms)\n[wrangler:info] GET /assets/app.js 200 OK (3ms)\n[wrangler:info] GET /missing 200 OK (3ms)\n"
+    },
+    {
+      "scenario": "html-alias",
+      "platform": "netlify",
+      "state": "observed",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "<oracle>/node_modules/netlify-cli/bin/run.js",
+        "dev",
+        "--offline",
+        "--internal-disable-edge-functions",
+        "--dir",
+        "<temporary-fixture>/public",
+        "--framework",
+        "#static",
+        "--port",
+        "41135",
+        "--no-open",
+        "--skip-gitignore"
+      ],
+      "observations": [
+        {
+          "path": "/assets/app.js",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "application/javascript; charset=utf-8",
+            "bodyBytes": 33,
+            "bodySha256": "b4829d181af299f2b5240167efe61e1e84cb106c68eac98275b5f101ad1fcc68"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "assets/app.js"
+          },
+          "investigation": "Explicit extensionless rewrite target backed by shell.html; alias profile remains bounded",
+          "hypothesisResult": "match",
+          "failures": []
+        }
+      ],
+      "log": "⬥ Using simple static server because '--dir' flag was specified\n⬥ Running static server from \"route-witness-oracle-Jm5GH2/public\"\n⬥ Setting up local dev server\n\n⬥ Static server listening to 3999\n⬥ Edge functions are disabled. Run without the --internal-disable-edge-functions flag to enable them.\n\n   ╭──────────────────────── ⬥  ────────────────────────╮\n   │                                                    │\n   │   Local dev server ready: http://localhost:41135   │\n   │                                                    │\n   ╰────────────────────────────────────────────────────╯\n\n(node:423) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.\n(Use `node --trace-deprecation ...` to show where the warning was created)\n"
+    },
+    {
+      "scenario": "html-alias",
+      "platform": "cloudflare",
+      "state": "observed",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "<oracle>/node_modules/wrangler/bin/wrangler.js",
+        "pages",
+        "dev",
+        "<temporary-fixture>/public",
+        "--ip",
+        "127.0.0.1",
+        "--port",
+        "33405",
+        "--inspector-port",
+        "0",
+        "--compatibility-date",
+        "2026-10-03",
+        "--show-interactive-dev-session=false",
+        "--log-level",
+        "info"
+      ],
+      "observations": [
+        {
+          "path": "/assets/app.js",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/html; charset=utf-8",
+            "bodyBytes": 20,
+            "bodySha256": "feae25d1f0fd7b0c84f4d05d1dd443e72f7f8bf9f964311449d5ee9425c7c0b6"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "shell.html"
+          },
+          "investigation": "Explicit extensionless rewrite target backed by shell.html; alias profile remains bounded",
+          "hypothesisResult": "match",
+          "failures": []
+        }
+      ],
+      "log": "[wrangler:warn] Unable to fetch the `Request.cf` object! Falling back to a default placeholder...\nError: getaddrinfo EAI_AGAIN workers.cloudflare.com\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n[wrangler:warn] Unable to fetch the `Request.cf` object! Falling back to a default placeholder...\nError: getaddrinfo EAI_AGAIN workers.cloudflare.com\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n[wrangler:info] Ready on http://127.0.0.1:33405\n[wrangler:info] GET /assets/style.css 200 OK (115ms)\n[wrangler:info] GET /assets/app.js 200 OK (4ms)\n"
+    }
+  ],
+  "lockfileSha256": "d82286e57d75b27b809573e143f8d534a00a079734f25cb54cb5d544f7e887eb",
+  "finishedAt": "2026-10-03T11:08:42.407Z",
+  "counts": {
+    "observedRequests": 46,
+    "blockedRuns": 0,
+    "hypothesisMismatches": 0
+  }
+}

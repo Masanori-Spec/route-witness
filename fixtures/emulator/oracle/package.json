@@ -1,0 +1,7 @@
+{
+  "name":"route-witness-official-emulators",
+  "private":true,
+  "version":"0.0.0",
+  "description":"Isolated official local oracle, not app dependencies",
+  "devDependencies":{"netlify-cli":"27.10.2","wrangler":"4.147.0"}
+}

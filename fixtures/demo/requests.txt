@@ -1,0 +1,5 @@
+/assets/app.js
+/assets/style.css
+/old
+/dashboard
+/query?test=1

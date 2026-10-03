@@ -1,0 +1,307 @@
+{
+  "schemaVersion": 1,
+  "evidenceLevel": "official-local-emulator-http",
+  "startedAt": "2026-10-03T11:03:41.314Z",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "arch": "x64",
+  "pins": {
+    "netlify-cli": "27.10.2",
+    "wrangler": "4.147.0"
+  },
+  "fixturesSha256": "9bfe9d4369c72435abeded68628b97dd880277bdbaf85e5286c1bde0d0cd6737",
+  "productionParityClaimed": false,
+  "runs": [
+    {
+      "scenario": "core",
+      "platform": "netlify",
+      "state": "blocked",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "<oracle>/node_modules/netlify-cli/bin/run.js",
+        "dev",
+        "--offline",
+        "--dir",
+        "<temporary-fixture>/public",
+        "--framework",
+        "#static",
+        "--port",
+        "18761",
+        "--no-open",
+        "--skip-gitignore"
+      ],
+      "observations": [],
+      "log": "⬥ Using simple static server because '--dir' flag was specified\n⬥ Running static server from \"route-witness-oracle-XDBCQS/public\"\n⬥ Setting up local dev server\n\n⬥ Static server listening to 3999\n⠋ Setting up the Edge Functions environment. This may take a couple of minutes.\n\n   ╭──────────────────────── ⬥  ────────────────────────╮\n   │                                                    │\n   │   Local dev server ready: http://localhost:18761   │\n   │                                                    │\n   ╰────────────────────────────────────────────────────╯\n\n ›   Error: Netlify CLI has terminated unexpectedly.\n\nPlease report this problem with reproduction steps at https://ntl.fyi/cli-error including the error details below.\n\nError: fetch failed\n    at toError (file://<oracle>/node_modules/netlify-cli/dist/utils/command-helpers.js:149:16)\n    at logAndThrowError (file://<oracle>/node_modules/netlify-cli/dist/utils/command-helpers.js:155:17)\n    at prepareServer (file://<oracle>/node_modules/netlify-cli/dist/lib/edge-functions/proxy.js:160:16)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n",
+      "error": "Runtime exited (1) before readiness"
+    },
+    {
+      "scenario": "core",
+      "platform": "cloudflare",
+      "state": "observed-with-mismatches",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "<oracle>/node_modules/wrangler/bin/wrangler.js",
+        "pages",
+        "dev",
+        "<temporary-fixture>/public",
+        "--ip",
+        "127.0.0.1",
+        "--port",
+        "18762",
+        "--inspector-port",
+        "0",
+        "--compatibility-date",
+        "2026-10-03",
+        "--show-interactive-dev-session=false",
+        "--log-level",
+        "info"
+      ],
+      "observations": [
+        {
+          "path": "/default",
+          "observed": {
+            "status": 302,
+            "location": "/target.txt",
+            "contentType": "text/plain;charset=UTF-8",
+            "bodyBytes": 26,
+            "bodySha256": "05df3bcf36665294fae9168938f89d68051425517f7e427609832286fba079af"
+          },
+          "expectedHypothesis": {
+            "status": 302,
+            "location": "/target.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/assets/style.css",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/css; charset=utf-8",
+            "bodyBytes": 24,
+            "bodySha256": "a6a1157c718a8e088a2f5002d00e4441e7fe6c2a07c7324f5f9d11be55a1552d"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "assets/style.css"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/assets/app.js",
+          "observed": {
+            "status": 308,
+            "location": "/shell",
+            "contentType": null,
+            "bodyBytes": 0,
+            "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "shell.html"
+          },
+          "investigation": null,
+          "hypothesisResult": "mismatch",
+          "failures": [
+            "status 308 != 200",
+            "body does not match shell.html",
+            "unexpected Location on expected asset response"
+          ]
+        },
+        {
+          "path": "/existing.txt",
+          "observed": {
+            "status": 301,
+            "location": "/target.txt",
+            "contentType": "text/plain;charset=UTF-8",
+            "bodyBytes": 26,
+            "bodySha256": "05df3bcf36665294fae9168938f89d68051425517f7e427609832286fba079af"
+          },
+          "expectedHypothesis": {
+            "status": 301,
+            "location": "/target.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/a",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/plain; charset=utf-8",
+            "bodyBytes": 16,
+            "bodySha256": "dc519ae78e8e60f6824e44ff0871949daae6e2ad6de83fc04b35b40d1a737444"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "b.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/b.txt",
+          "observed": {
+            "status": 200,
+            "location": null,
+            "contentType": "text/plain; charset=utf-8",
+            "bodyBytes": 16,
+            "bodySha256": "4e9c375b3a854078ea75a75a01c17cc38fec68c39ded03546ed0b6f9b839f95f"
+          },
+          "expectedHypothesis": {
+            "status": 200,
+            "bodyAsset": "c.txt"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/duplicate",
+          "observed": {
+            "status": 301,
+            "location": "/first",
+            "contentType": "text/plain;charset=UTF-8",
+            "bodyBytes": 21,
+            "bodySha256": "41766e56755821bbd1da679cb14ac0f6c8a6446da0cbd9150b3eaa72b27bb2b5"
+          },
+          "expectedHypothesis": {
+            "status": 301,
+            "location": "/first"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/order/special",
+          "observed": {
+            "status": 301,
+            "location": "/specific",
+            "contentType": "text/plain;charset=UTF-8",
+            "bodyBytes": 24,
+            "bodySha256": "a93ce5cf794bfb18a708b8ca55f0b217c084314b7a9c4ab045ba2dcf0265e15e"
+          },
+          "expectedHypothesis": {
+            "status": 301,
+            "location": "/specific"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/order/other",
+          "observed": {
+            "status": 302,
+            "location": "/dynamic/other",
+            "contentType": "text/plain;charset=UTF-8",
+            "bodyBytes": 29,
+            "bodySha256": "b0a304e53ac73f10d2efa4b5af8d91f1ec23e41c1d0476c59152f17dfc5c672c"
+          },
+          "expectedHypothesis": {
+            "status": 302,
+            "location": "/dynamic/other"
+          },
+          "investigation": null,
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/precedence/special",
+          "observed": {
+            "status": 302,
+            "location": "/dynamic/special",
+            "contentType": "text/plain;charset=UTF-8",
+            "bodyBytes": 31,
+            "bodySha256": "d05e81466c3f5b4932832a63fe126c127d6a312e02577e1132a0bf03b9d509c5"
+          },
+          "expectedHypothesis": null,
+          "investigation": "Cloudflare exact rule occurs after first dynamic rule",
+          "hypothesisResult": "unasserted",
+          "failures": []
+        },
+        {
+          "path": "/code303",
+          "observed": {
+            "status": 303,
+            "location": "/target.txt",
+            "contentType": "text/plain;charset=UTF-8",
+            "bodyBytes": 26,
+            "bodySha256": "05df3bcf36665294fae9168938f89d68051425517f7e427609832286fba079af"
+          },
+          "expectedHypothesis": {
+            "status": 303,
+            "location": "/target.txt"
+          },
+          "investigation": "Netlify 303 not explicitly enumerated by current redirect docs",
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/code307",
+          "observed": {
+            "status": 307,
+            "location": "/target.txt",
+            "contentType": "text/plain;charset=UTF-8",
+            "bodyBytes": 26,
+            "bodySha256": "05df3bcf36665294fae9168938f89d68051425517f7e427609832286fba079af"
+          },
+          "expectedHypothesis": {
+            "status": 307,
+            "location": "/target.txt"
+          },
+          "investigation": "Netlify docs explicitly mark 307 unsupported; record local divergence",
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/code308",
+          "observed": {
+            "status": 308,
+            "location": "/target.txt",
+            "contentType": null,
+            "bodyBytes": 0,
+            "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "expectedHypothesis": {
+            "status": 308,
+            "location": "/target.txt"
+          },
+          "investigation": "Netlify 308 not explicitly enumerated by current redirect docs",
+          "hypothesisResult": "match",
+          "failures": []
+        },
+        {
+          "path": "/missing",
+          "observed": {
+            "status": 404,
+            "location": null,
+            "contentType": "text/html; charset=utf-8",
+            "bodyBytes": 18,
+            "bodySha256": "1caa513a7442ffb8fc886af51b51e24d5b9586dba63caa6db0d702c7b2aa4f78"
+          },
+          "expectedHypothesis": null,
+          "investigation": "Explicit 404.html prevents implicit Cloudflare SPA fallback",
+          "hypothesisResult": "unasserted",
+          "failures": []
+        }
+      ],
+      "log": "\u001b[33m▲ \u001b[43;33m[\u001b[43;30mWARNING\u001b[43;33m]\u001b[0m \u001b[1mFound 1 invalid redirect rule:\u001b[0m\n\n  ▶︎ Ignoring duplicate rule for path /duplicate.\n      at public/_redirects:7 | /duplicate /second 302\n  \n  \n\n\nThe redirect rule /precedence/special → 301 /specific could be made more performant by bringing it above any lines with splats or placeholders.\n[wrangler:warn] Unable to fetch the `Request.cf` object! Falling back to a default placeholder...\nError: getaddrinfo EAI_AGAIN workers.cloudflare.com\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n[wrangler:warn] Unable to fetch the `Request.cf` object! Falling back to a default placeholder...\nError: getaddrinfo EAI_AGAIN workers.cloudflare.com\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)\n[wrangler:info] Ready on http://127.0.0.1:18762\n[wrangler:info] GET /assets/style.css 200 OK (158ms)\n[wrangler:info] GET /default 302 Found (3ms)\n[wrangler:info] GET /assets/style.css 200 OK (3ms)\n[wrangler:info] GET /assets/app.js 308 Permanent Redirect (3ms)\n[wrangler:info] GET /existing.txt 301 Moved Permanently (2ms)\n[wrangler:info] GET /a 200 OK (2ms)\n[wrangler:info] GET /b.txt 200 OK (3ms)\n[wrangler:info] GET /duplicate 301 Moved Permanently (3ms)\n[wrangler:info] GET /order/special 301 Moved Permanently (3ms)\n[wrangler:info] GET /order/other 302 Found (2ms)\n[wrangler:info] GET /precedence/special 302 Found (2ms)\n[wrangler:info] GET /code303 303 See Other (2ms)\n[wrangler:info] GET /code307 307 Temporary Redirect (3ms)\n[wrangler:info] GET /code308 308 Permanent Redirect (1ms)\n[wrangler:info] GET /missing 404 Not Found (3ms)\n"
+    }
+  ],
+  "lockfileSha256": "d82286e57d75b27b809573e143f8d534a00a079734f25cb54cb5d544f7e887eb",
+  "finishedAt": "2026-10-03T11:03:53.692Z",
+  "counts": {
+    "observedRequests": 14,
+    "blockedRuns": 1,
+    "hypothesisMismatches": 1
+  }
+}
